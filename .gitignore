@@ -1,0 +1,22 @@
+# Node dependencies
+node_modules/
+*/node_modules/
+
+# Build output
+dist/
+build/
+*/dist/
+*/build/
+
+# Environment variables
+.env
+*/.env
+.env.local
+
+# Logs
+npm-debug.log*
+yarn-error.log*
+
+# Editor settings
+.vscode/
+.DS_Store
