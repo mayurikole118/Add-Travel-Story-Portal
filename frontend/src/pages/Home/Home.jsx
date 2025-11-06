@@ -10,7 +10,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AddEditTravelStory from "./AddEditTravelStory";
 import ViewTravelStory from "./ViewTravelStory";
-import EmptyCard from "../../components/Cards/EmptyCard";
+import EmptyCard from "../../components/cards/EmptyCard";
 
 import { DayPicker } from "react-day-picker";
 import moment from "moment";
