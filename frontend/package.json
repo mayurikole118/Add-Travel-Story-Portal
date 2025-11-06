@@ -21,7 +21,8 @@
     "react-modal": "^3.16.3",
     "react-router-dom": "^7.9.4",
     "react-toastify": "^11.0.5",
-    "tailwind-scrollbar": "^4.0.2"
+    "tailwind-scrollbar": "^4.0.2",
+    "travel-booking-poratl": "file:.."
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

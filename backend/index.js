@@ -1,5 +1,6 @@
 require("dotenv").config();
 
+
 const config = require("./config.json");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
@@ -9,6 +10,7 @@ const jwt = require("jsonwebtoken");
 const upload = require("./multer");
 const fs = require("fs");
 const path = require("path");
+
 
 const { authenticateToken } = require("./utilities");
 
@@ -362,6 +364,14 @@ app.get("/travel-stories/filter", authenticateToken, async (req, res) => {
     res.status(500).json({ error: true, message: error.message });
   }
 });
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
+  });
+}
 
 app.listen(8000);
 module.exports = app;
