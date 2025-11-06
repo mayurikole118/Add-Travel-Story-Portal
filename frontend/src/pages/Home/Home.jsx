@@ -14,7 +14,7 @@ import EmptyCard from "../../components/cards/EmptyCard";
 
 import { DayPicker } from "react-day-picker";
 import moment from "moment";
-import FilterInfoTitle from "../../components/Cards/FilterInfoTitle";
+import FilterInfoTitle from "../../components/cards/FilterInfoTitle";
 import { getEmptyCardImg, getEmptyCardMessage } from "../../utils/helper";
 
 const Home = () => {
