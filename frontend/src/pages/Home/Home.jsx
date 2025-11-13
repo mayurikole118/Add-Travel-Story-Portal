@@ -4,17 +4,17 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../utils/axiosInstance";
 import { MdAdd } from "react-icons/md";
 import Modal from "react-modal";
-import TravelStoryCard from "../../components/cards/TravelStoryCard.jsx";
+import TravelStoryCard from "../../components/Cards/TravelStoryCard";
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AddEditTravelStory from "./AddEditTravelStory";
 import ViewTravelStory from "./ViewTravelStory";
-import EmptyCard from "../../components/cards/EmptyCard";
+import EmptyCard from "../../components/Cards/EmptyCard";
 
 import { DayPicker } from "react-day-picker";
 import moment from "moment";
-import FilterInfoTitle from "../../components/cards/FilterInfoTitle";
+import FilterInfoTitle from "../../components/Cards/FilterInfoTitle";
 import { getEmptyCardImg, getEmptyCardMessage } from "../../utils/helper";
 
 const Home = () => {

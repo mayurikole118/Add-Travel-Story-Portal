@@ -1,5 +1,7 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+import path from "path";
+
+export default {
   content: [
     "./index.html",
     "./src/**/*.{js,jsx,ts,tsx}",
@@ -14,15 +16,10 @@ module.exports = {
         secondary: "#EF863E",
       },
       backgroundImage: {
-        "login-bg-img": "url('/src/assets/pictures/bg-img.png')",
-        "signup-bg-img": "url('/src/assets/pictures/signup-bg-img.png')",
+        "login-bg-img": "url('@/assets/images/bg-image.png')",
+        "signup-bg-img": "url('@/assets/images/signup-bg-img.png')",
       },
     },
   },
-  plugins: [
-    require('tailwind-scrollbar')({ nocompatible: true }),
-  ],
-  variants: {
-    scrollbar: ['rounded'],
-  },
+  plugins: [],
 };

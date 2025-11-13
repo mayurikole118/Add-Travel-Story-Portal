@@ -1,39 +1,36 @@
+import React, { useState } from "react";
+import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 
-import {FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
-import React, { useState } from 'react';
+const PasswordInput = ({ value, onChange, placeholder }) => {
+  const [isShowPassword, setIsShowPassword] = useState(false);
 
-const PasswordInput = ({value, onChange, placeholder}) => {
+  const toggleShowPassword = () => {
+    setIsShowPassword(!isShowPassword);
+  };
 
-    
-        const [isShowPassword, setisShowPassword] = useState(false);
-
-        const toggleShowPassword =() => {
-            setisShowPassword(!isShowPassword);
-        };
-    
   return (
-    <div  className="flex items-centre bg-cyan-600/5 px-5 rounded mb-3">
+    <div className="flex items-center bg-cyan-600/5 px-5 rounded mb-3">
+      <input
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder || "Password"}
+        type={isShowPassword ? "text" : "password"}
+        className="w-full text-sm bg-transparent py-3 mr-3 rounded outline-none"
+      />
 
-        <input 
-        value ={value}
-            onChange={onChange}
-            placeholder={placeholder || "Password"}
-            className="w-full text-sm bg-transparent  py-3 mr-3 rounded outline-none"
-        />
-
-        {isShowPassword ?  (
-        <FaRegEye 
+      {isShowPassword ? (
+        <FaRegEye
           size={22}
           className="text-primary cursor-pointer"
-           onClick={() => toggleShowPassword()}
+          onClick={() => toggleShowPassword()}
         />
-        ) : (
-         <FaRegEyeSlash 
+      ) : (
+        <FaRegEyeSlash
           size={22}
-          className="text-primary cursor-pointer"
-           onClick={() => toggleShowPassword()}
-           />   
-        )}
+          className="text-slate-400 cursor-pointer"
+          onClick={() => toggleShowPassword()}
+        />
+      )}
     </div>
   );
 };
