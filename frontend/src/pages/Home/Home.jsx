@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../utils/axiosInstance";
 import { MdAdd } from "react-icons/md";
 import Modal from "react-modal";
-import TravelStoryCard from "../../components/Cards/TravelStoryCard";
+import TravelStoryCard from "../../components/Cards/TravelStoryCard.jsx";
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
