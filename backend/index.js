@@ -21,6 +21,10 @@ const app = express();
 app.use(express.json());
 app.use(cors({ origin: "*" }));
 
+// Get backend base URL dynamically (for Render or local)
+const BASE_URL =
+  process.env.RENDER_EXTERNAL_URL || "http://localhost:8000";
+
 // Create Account
 app.post("/create-account", async (req, res) => {
   const { fullName, email, password } = req.body;
@@ -123,7 +127,7 @@ app.post("/image-upload", upload.single("image"), async (req, res) => {
         .json({ error: true, message: "No image uploaded" });
     }
 
-    const imageUrl = `http://localhost:8000/uploads/${req.file.filename}`;
+    const imageUrl = `${BASE_URL}/uploads/${req.file.filename}`;
 
     res.status(200).json({ imageUrl });
   } catch (error) {
@@ -142,15 +146,10 @@ app.delete("/delete-image", async (req, res) => {
   }
 
   try {
-    // Extract the filename from the imageUrl
     const filename = path.basename(imageUrl);
-
-    // Define the file path
     const filePath = path.join(__dirname, "uploads", filename);
 
-    // Check if the file exists
     if (fs.existsSync(filePath)) {
-      // Delete the file from the uploads folder
       fs.unlinkSync(filePath);
       res.status(200).json({ message: "Image deleted successfully" });
     } else {
@@ -161,7 +160,7 @@ app.delete("/delete-image", async (req, res) => {
   }
 });
 
-// Serve static files from the uploads and assets directory
+// Serve static files
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/assets", express.static(path.join(__dirname, "assets")));
 
@@ -170,14 +169,12 @@ app.post("/add-travel-story", authenticateToken, async (req, res) => {
   const { title, story, visitedLocation, imageUrl, visitedDate } = req.body;
   const { userId } = req.user;
 
-  // Validate required fields
   if (!title || !story || !visitedLocation || !imageUrl || !visitedDate) {
     return res
       .status(400)
       .json({ error: true, message: "All fields are required" });
   }
 
-  // Convert visitedDate from milliseconds to Date object
   const parsedVisitedDate = new Date(parseInt(visitedDate));
 
   try {
@@ -217,18 +214,15 @@ app.put("/edit-story/:id", authenticateToken, async (req, res) => {
   const { title, story, visitedLocation, imageUrl, visitedDate } = req.body;
   const { userId } = req.user;
 
-  // Validate required fields
   if (!title || !story || !visitedLocation || !visitedDate) {
     return res
       .status(400)
       .json({ error: true, message: "All fields are required" });
   }
 
-  // Convert visitedDate from milliseconds to Date object
   const parsedVisitedDate = new Date(parseInt(visitedDate));
 
   try {
-    // Find the travel story by ID and ensure it belongs to the authenticated user
     const travelStory = await TravelStory.findOne({ _id: id, userId: userId });
 
     if (!travelStory) {
@@ -237,7 +231,7 @@ app.put("/edit-story/:id", authenticateToken, async (req, res) => {
         .json({ error: true, message: "Travel story not found" });
     }
 
-    const placeholderImgUrl = `http://localhost:8000/assets/placeholder.png`;
+    const placeholderImgUrl = `${BASE_URL}/assets/placeholder.png`;
 
     travelStory.title = title;
     travelStory.story = story;
@@ -252,13 +246,12 @@ app.put("/edit-story/:id", authenticateToken, async (req, res) => {
   }
 });
 
-// Delete a travel story
+// Delete Story
 app.delete("/delete-story/:id", authenticateToken, async (req, res) => {
   const { id } = req.params;
   const { userId } = req.user;
 
   try {
-    // Find the travel story by ID and ensure it belongs to the authenticated user
     const travelStory = await TravelStory.findOne({ _id: id, userId: userId });
 
     if (!travelStory) {
@@ -267,23 +260,14 @@ app.delete("/delete-story/:id", authenticateToken, async (req, res) => {
         .json({ error: true, message: "Travel story not found" });
     }
 
-    // Delete the travel story from the database
     await travelStory.deleteOne({ _id: id, userId: userId });
 
-    // Extract the filename from the imageUrl
     const imageUrl = travelStory.imageUrl;
     const filename = path.basename(imageUrl);
-
-    // Define the file path
     const filePath = path.join(__dirname, "uploads", filename);
 
-    // Delete the image file from the uploads folder
     fs.unlink(filePath, (err) => {
-      if (err) {
-        console.error("Failed to delete image file:", err);
-        // Optionally, you could still respond with a success status here
-        // if you don't want to treat this as a critical error.
-      }
+      if (err) console.error("Failed to delete image file:", err);
     });
 
     res.status(200).json({ message: "Travel story deleted successfully" });
@@ -292,7 +276,7 @@ app.delete("/delete-story/:id", authenticateToken, async (req, res) => {
   }
 });
 
-// Update isFavourite
+// Update Favourite
 app.put("/update-is-favourite/:id", authenticateToken, async (req, res) => {
   const { id } = req.params;
   const { isFavourite } = req.body;
@@ -316,7 +300,7 @@ app.put("/update-is-favourite/:id", authenticateToken, async (req, res) => {
   }
 });
 
-// Search travel stories
+// Search Stories
 app.get("/search", authenticateToken, async (req, res) => {
   const { query } = req.query;
   const { userId } = req.user;
@@ -341,27 +325,28 @@ app.get("/search", authenticateToken, async (req, res) => {
   }
 });
 
-// Filter travel stories by date range
+// Filter Stories
 app.get("/travel-stories/filter", authenticateToken, async (req, res) => {
   const { startDate, endDate } = req.query;
   const { userId } = req.user;
 
   try {
-    // Convert startDate and endDate from milliseconds to Date objects
     const start = new Date(parseInt(startDate));
     const end = new Date(parseInt(endDate));
 
-    // Find travel stories that belong to the authenticated user and fall within the date range
     const filteredStories = await TravelStory.find({
       userId: userId,
       visitedDate: { $gte: start, $lte: end },
     }).sort({ isFavourite: -1 });
 
-    res.status(200).json({stories: filteredStories});
+    res.status(200).json({ stories: filteredStories });
   } catch (error) {
     res.status(500).json({ error: true, message: error.message });
   }
 });
 
-app.listen(8000);
+// ✅ Use Render's dynamic port
+const PORT = process.env.PORT || 8000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
 module.exports = app;
