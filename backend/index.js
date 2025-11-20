@@ -14,10 +14,12 @@ const { authenticateToken } = require("./utilities");
 const User = require("./models/user.model");
 const TravelStory = require("./models/travelStory.model");
 
-// Connect to MongoDB
-mongoose.connect(config.connectionString)
+// ======================== MONGODB CONNECT ========================
+
+mongoose
+  .connect(config.connectionString)
   .then(() => console.log("✅ MongoDB Connected"))
-  .catch(err => console.error("❌ MongoDB Connection Error:", err));
+  .catch((err) => console.error("❌ MongoDB Connection Error:", err));
 
 const app = express();
 app.use(express.json());
@@ -31,16 +33,28 @@ app.post("/create-account", async (req, res) => {
     const { fullName, email, password } = req.body;
 
     if (!fullName || !email || !password) {
-      return res.status(400).json({ error: true, message: "All fields are required" });
+      return res.status(400).json({
+        error: true,
+        message: "All fields are required",
+      });
     }
 
     const isUser = await User.findOne({ email });
     if (isUser) {
-      return res.status(400).json({ error: true, message: "User already exists" });
+      return res.status(400).json({
+        error: true,
+        message: "User already exists",
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ fullName, email, password: hashedPassword });
+
+    const user = new User({
+      fullName,
+      email,
+      password: hashedPassword,
+    });
+
     await user.save();
 
     const accessToken = jwt.sign(
@@ -66,15 +80,19 @@ app.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password)
-      return res.status(400).json({ message: "Email and Password are required" });
+      return res
+        .status(400)
+        .json({ error: true, message: "Email and Password are required" });
 
     const user = await User.findOne({ email });
     if (!user)
-      return res.status(400).json({ message: "User not found" });
+      return res.status(400).json({ error: true, message: "User not found" });
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid)
-      return res.status(400).json({ message: "Invalid Credentials" });
+      return res
+        .status(400)
+        .json({ error: true, message: "Invalid Credentials" });
 
     const accessToken = jwt.sign(
       { userId: user._id },
@@ -111,7 +129,9 @@ app.get("/get-user", authenticateToken, async (req, res) => {
 app.post("/image-upload", upload.single("image"), async (req, res) => {
   try {
     if (!req.file)
-      return res.status(400).json({ error: true, message: "No image uploaded" });
+      return res
+        .status(400)
+        .json({ error: true, message: "No image uploaded" });
 
     const baseUrl =
       process.env.NODE_ENV === "production"
@@ -119,6 +139,7 @@ app.post("/image-upload", upload.single("image"), async (req, res) => {
         : "http://localhost:8000";
 
     const imageUrl = `${baseUrl}/uploads/${req.file.filename}`;
+
     res.status(200).json({ imageUrl });
   } catch (error) {
     res.status(500).json({ error: true, message: error.message });
@@ -127,8 +148,11 @@ app.post("/image-upload", upload.single("image"), async (req, res) => {
 
 app.delete("/delete-image", async (req, res) => {
   const { imageUrl } = req.query;
+
   if (!imageUrl)
-    return res.status(400).json({ error: true, message: "imageUrl is required" });
+    return res
+      .status(400)
+      .json({ error: true, message: "imageUrl is required" });
 
   try {
     const filename = path.basename(imageUrl);
@@ -136,10 +160,12 @@ app.delete("/delete-image", async (req, res) => {
 
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
-      res.status(200).json({ message: "Image deleted successfully" });
-    } else {
-      res.status(404).json({ error: true, message: "Image not found" });
+      return res
+        .status(200)
+        .json({ message: "Image deleted successfully" });
     }
+
+    return res.status(404).json({ error: true, message: "Image not found" });
   } catch (error) {
     res.status(500).json({ error: true, message: error.message });
   }
@@ -150,13 +176,16 @@ app.use("/assets", express.static(path.join(__dirname, "assets")));
 
 // ======================== STORY ROUTES ========================
 
+// Add Story
 app.post("/add-travel-story", authenticateToken, async (req, res) => {
   try {
     const { title, story, visitedLocation, imageUrl, visitedDate } = req.body;
     const { userId } = req.user;
 
     if (!title || !story || !visitedLocation || !imageUrl || !visitedDate)
-      return res.status(400).json({ error: true, message: "All fields are required" });
+      return res
+        .status(400)
+        .json({ error: true, message: "All fields are required" });
 
     const parsedVisitedDate = new Date(parseInt(visitedDate));
 
@@ -170,21 +199,29 @@ app.post("/add-travel-story", authenticateToken, async (req, res) => {
     });
 
     await travelStory.save();
-    res.status(201).json({ story: travelStory, message: "Added Successfully" });
+
+    res
+      .status(201)
+      .json({ story: travelStory, message: "Added Successfully" });
   } catch (error) {
     res.status(400).json({ error: true, message: error.message });
   }
 });
 
+// Get All Stories
 app.get("/get-all-stories", authenticateToken, async (req, res) => {
   try {
-    const stories = await TravelStory.find({ userId: req.user.userId }).sort({ isFavourite: -1 });
+    const stories = await TravelStory.find({
+      userId: req.user.userId,
+    }).sort({ isFavourite: -1 });
+
     res.status(200).json({ stories });
   } catch (error) {
     res.status(500).json({ error: true, message: error.message });
   }
 });
 
+// Edit Story
 app.put("/edit-story/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -192,15 +229,21 @@ app.put("/edit-story/:id", authenticateToken, async (req, res) => {
     const { userId } = req.user;
 
     if (!title || !story || !visitedLocation || !visitedDate)
-      return res.status(400).json({ error: true, message: "All fields are required" });
+      return res
+        .status(400)
+        .json({ error: true, message: "All fields are required" });
 
     const parsedVisitedDate = new Date(parseInt(visitedDate));
 
     const travelStory = await TravelStory.findOne({ _id: id, userId });
     if (!travelStory)
-      return res.status(404).json({ error: true, message: "Travel story not found" });
+      return res
+        .status(404)
+        .json({ error: true, message: "Travel story not found" });
 
-    const placeholderImgUrl = `${process.env.BACKEND_BASE_URL || "http://localhost:8000"}/assets/placeholder.png`;
+    const placeholderImgUrl = `${
+      process.env.BACKEND_BASE_URL || "http://localhost:8000"
+    }/assets/placeholder.png`;
 
     travelStory.title = title;
     travelStory.story = story;
@@ -209,25 +252,32 @@ app.put("/edit-story/:id", authenticateToken, async (req, res) => {
     travelStory.visitedDate = parsedVisitedDate;
 
     await travelStory.save();
-    res.status(200).json({ story: travelStory, message: "Update Successful" });
+
+    res
+      .status(200)
+      .json({ story: travelStory, message: "Update Successful" });
   } catch (error) {
     res.status(500).json({ error: true, message: error.message });
   }
 });
 
+// Delete Story
 app.delete("/delete-story/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { userId } = req.user;
-    const story = await TravelStory.findOne({ _id: id, userId });
 
+    const story = await TravelStory.findOne({ _id: id, userId });
     if (!story)
-      return res.status(404).json({ error: true, message: "Travel story not found" });
+      return res
+        .status(404)
+        .json({ error: true, message: "Travel story not found" });
 
     await story.deleteOne();
 
     const filename = path.basename(story.imageUrl);
     const filePath = path.join(__dirname, "uploads", filename);
+
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 
     res.status(200).json({ message: "Travel story deleted successfully" });
@@ -236,6 +286,7 @@ app.delete("/delete-story/:id", authenticateToken, async (req, res) => {
   }
 });
 
+// Update Favourite
 app.put("/update-is-favourite/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -244,20 +295,25 @@ app.put("/update-is-favourite/:id", authenticateToken, async (req, res) => {
 
     const story = await TravelStory.findOne({ _id: id, userId });
     if (!story)
-      return res.status(404).json({ error: true, message: "Travel story not found" });
+      return res
+        .status(404)
+        .json({ error: true, message: "Travel story not found" });
 
     story.isFavourite = isFavourite;
     await story.save();
+
     res.status(200).json({ story, message: "Update Successful" });
   } catch (error) {
     res.status(500).json({ error: true, message: error.message });
   }
 });
 
+// Search
 app.get("/search", authenticateToken, async (req, res) => {
   try {
     const { query } = req.query;
     const { userId } = req.user;
+
     if (!query)
       return res.status(404).json({ error: true, message: "query is required" });
 
@@ -276,6 +332,7 @@ app.get("/search", authenticateToken, async (req, res) => {
   }
 });
 
+// Filter by Date
 app.get("/travel-stories/filter", authenticateToken, async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
@@ -299,8 +356,8 @@ app.get("/travel-stories/filter", authenticateToken, async (req, res) => {
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
-   app.get(/.*/, (req, res) => {
 
+  app.get("*", (req, res) => {
     res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
   });
 }
